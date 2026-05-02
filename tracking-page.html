@@ -1,0 +1,128 @@
+<!--
+  CLOUDFLARE WORKERS DEPLOYMENT INSTRUCTIONS
+  ==========================================
+  Option A — Deploy as a standalone Worker (see cloudflare-worker.js):
+    1. Copy cloudflare-worker.js to the Cloudflare Workers editor (dash.cloudflare.com > Workers & Pages > Create)
+    2. Paste the contents, give the worker a name, and hit "Deploy"
+    3. The worker will serve this HTML at your worker's *.workers.dev URL
+
+  Option B — Host the raw HTML on Cloudflare Pages:
+    1. Push this file to a GitHub repo
+    2. In Cloudflare Pages, connect the repo and set the build output to "/"
+    3. Deploy — Pages will serve this file at the root path
+
+  Changing the webhook / redirect:
+    - Edit WEBHOOK_URL and REDIRECT_URL in the <script> block below
+    - Re-deploy; no other changes needed
+
+  Tracking link format:
+    https://your-worker.workers.dev/?trackingId=abc123
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redirecting…</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #f9f9f9;
+      font-family: system-ui, sans-serif;
+      color: #555;
+    }
+    p { font-size: 1rem; letter-spacing: 0.02em; }
+  </style>
+</head>
+<body>
+  <p>Please wait, redirecting&hellip;</p>
+
+  <script>
+    // ─── CONFIGURATION ────────────────────────────────────────────────────────
+    const WEBHOOK_URL   = 'https://your-n8n-instance.com/webhook/your-webhook-id';
+    const REDIRECT_URL  = 'https://your-destination.com';
+    // ─────────────────────────────────────────────────────────────────────────
+
+    function isRealBrowser() {
+      // 1. Screen width must be > 0 (headless Chrome often reports 0)
+      if (typeof screen === 'undefined' || screen.width <= 0) return false;
+
+      // 2. Cookies must be enabled
+      if (!navigator.cookieEnabled) return false;
+
+      // 3. Canvas fingerprint — headless renderers produce tiny or empty data URLs
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width  = 200;
+        canvas.height = 50;
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = '#f0f';
+        ctx.fillRect(10, 10, 80, 30);
+
+        ctx.fillStyle = '#0ff';
+        ctx.font = '18px Arial';
+        ctx.fillText('tracker_check', 20, 32);
+
+        ctx.beginPath();
+        ctx.arc(150, 25, 15, 0, Math.PI * 2);
+        ctx.strokeStyle = '#ff0';
+        ctx.stroke();
+
+        const dataUrl = canvas.toDataURL('image/png');
+        if (!dataUrl || dataUrl.length < 500) return false;
+      } catch (_) {
+        return false;
+      }
+
+      return true;
+    }
+
+    function collectSignals() {
+      const params    = new URLSearchParams(window.location.search);
+      const trackingId = params.get('trackingId') || '';
+
+      return {
+        trackingId,
+        userAgent:    navigator.userAgent     || '',
+        screenWidth:  screen.width            || 0,
+        screenHeight: screen.height           || 0,
+        timezone:     Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+        language:     navigator.language      || '',
+        colorDepth:   screen.colorDepth       || 0,
+        cookieEnabled: navigator.cookieEnabled,
+        platform:     navigator.platform      || '',
+        timestamp:    new Date().toISOString(),
+        referrer:     document.referrer       || '',
+        href:         window.location.href    || '',
+      };
+    }
+
+    async function run() {
+      const botDetected = !isRealBrowser();
+
+      if (!botDetected) {
+        const payload = collectSignals();
+
+        try {
+          await fetch(WEBHOOK_URL, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(payload),
+          });
+        } catch (_) {
+          // Webhook failure must never block the redirect
+        }
+      }
+
+      window.location.replace(REDIRECT_URL);
+    }
+
+    run();
+  </script>
+</body>
+</html>
