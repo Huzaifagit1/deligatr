@@ -120,7 +120,8 @@ export async function POST(req: NextRequest) {
     }
 
     const timestamp = openedAt.replace(/[:.]/g, '-')
-    const eventFilePath = `events/${trackingId}/${timestamp}_${eventId}.json`
+    // Path relative to the bucket root — do NOT prefix with bucket name
+    const eventFilePath = `${trackingId}/${timestamp}_${eventId}.json`
 
     // Save JSON to storage
     const jsonBytes = new TextEncoder().encode(JSON.stringify(eventJson, null, 2))

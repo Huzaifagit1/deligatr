@@ -44,7 +44,9 @@ export default function EventsPage() {
 
   const downloadJson = async (event: TrackingEvent) => {
     if (!event.event_file_path) return
-    const { data } = await supabase.storage.from('events').download(event.event_file_path)
+    // Strip leading "events/" if it was stored with the bucket name prefix (old records)
+    const storagePath = event.event_file_path.replace(/^events\//, '')
+    const { data } = await supabase.storage.from('events').download(storagePath)
     if (!data) return
     const url = URL.createObjectURL(data)
     const a = document.createElement('a')
