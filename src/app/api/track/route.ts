@@ -23,7 +23,7 @@ function isBotUserAgent(ua: string): boolean {
 
 export async function POST(req: NextRequest) {
   try {
-    const body: TrackPayload & { browser?: string; os?: string } = await req.json()
+    const body: TrackPayload & { browser?: string; os?: string; email?: string } = await req.json()
     const {
       trackingId,
       userAgent,
@@ -36,7 +36,9 @@ export async function POST(req: NextRequest) {
       platform,
       browser: clientBrowser,
       os: clientOs,
+      email: rawEmail,
     } = body
+    const email = rawEmail || 'unknown'
 
     if (!trackingId) {
       return NextResponse.json({ error: 'Missing trackingId' }, { status: 400 })
@@ -116,6 +118,9 @@ export async function POST(req: NextRequest) {
         cookie_enabled: cookieEnabled,
         canvas_passed: canvasPassed,
       },
+      lead: {
+        email,
+      },
       is_bot: isBot,
     }
 
@@ -148,6 +153,7 @@ export async function POST(req: NextRequest) {
         screen_height: screenHeight,
         timezone,
         language,
+        email,
         is_bot: isBot,
         event_file_path: storageError ? null : eventFilePath,
       })

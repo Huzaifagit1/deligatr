@@ -19,7 +19,8 @@ export default function Dashboard() {
   const addToast = useCallback((event: TrackingEvent) => {
     const label = event.is_bot ? 'Bot detected' : 'PDF opened'
     const loc = [event.city, event.country].filter(Boolean).join(', ') || 'Unknown location'
-    const message = `${label}: ${event.pdf_name} — ${loc} on ${event.device ?? 'Unknown device'}`
+    const emailPart = event.email && event.email !== 'unknown' ? `${event.email} from ` : ''
+    const message = `${label}: ${event.pdf_name} — ${emailPart}${loc} on ${event.device ?? 'Unknown device'}`
     const id = crypto.randomUUID()
     setToasts((prev) => [...prev, { id, message, isBot: event.is_bot }])
   }, [])

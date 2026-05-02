@@ -58,6 +58,7 @@ export default function TrackPage() {
 
       const ua = navigator.userAgent
       const { browser, os } = getBrowserInfo(ua)
+      const email = new URLSearchParams(window.location.search).get('email') || 'unknown'
 
       const payload = {
         trackingId,
@@ -71,6 +72,7 @@ export default function TrackPage() {
         platform: /Mobi|Android/i.test(ua) ? 'mobile' : 'desktop',
         browser,
         os,
+        email,
       }
 
       let pdfUrl: string | null = null

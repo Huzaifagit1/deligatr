@@ -124,6 +124,7 @@ export default function EventsPage() {
               <thead>
                 <tr className="bg-gray-900 text-gray-400 text-xs uppercase tracking-wider">
                   <th className="px-4 py-3 text-left">Type</th>
+                  <th className="px-4 py-3 text-left">Email</th>
                   <th className="px-4 py-3 text-left">Opened At</th>
                   <th className="px-4 py-3 text-left">Location</th>
                   <th className="px-4 py-3 text-left">Device</th>
@@ -147,6 +148,13 @@ export default function EventsPage() {
                       >
                         {event.is_bot ? 'Bot' : 'Human'}
                       </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-300 text-xs">
+                      {event.email && event.email !== 'unknown' ? (
+                        <span className="text-blue-300">{event.email}</span>
+                      ) : (
+                        <span className="text-gray-600">unknown</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-gray-300 whitespace-nowrap text-xs">
                       {new Date(event.opened_at).toLocaleString()}

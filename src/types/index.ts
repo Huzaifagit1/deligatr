@@ -27,6 +27,7 @@ export interface TrackingEvent {
   timezone: string | null
   language: string | null
   is_bot: boolean
+  email: string | null
   event_file_path: string | null
 }
 
@@ -66,6 +67,9 @@ export interface EventJson {
     language: string
     cookie_enabled: boolean
     canvas_passed: boolean
+  }
+  lead: {
+    email: string
   }
   is_bot: boolean
 }
