@@ -77,7 +77,7 @@ export default function Dashboard() {
   }, [addToast, fetchPdfs])
 
   const copyLink = (trackingId: string) => {
-    const url = `${process.env.NEXT_PUBLIC_APP_URL}/track/${trackingId}`
+    const url = `${process.env.NEXT_PUBLIC_APP_URL}/track/${trackingId}?email={{email}}`
     navigator.clipboard.writeText(url)
     setCopiedId(trackingId)
     setTimeout(() => setCopiedId(null), 2000)
@@ -155,7 +155,7 @@ export default function Dashboard() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <span className="text-gray-400 truncate max-w-[180px] text-xs font-mono">
-                            {appUrl}/track/{pdf.tracking_id}
+                            {`${appUrl}/track/${pdf.tracking_id}?email={{email}}`}
                           </span>
                           <button
                             onClick={() => copyLink(pdf.tracking_id)}

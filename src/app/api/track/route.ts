@@ -164,6 +164,40 @@ export async function POST(req: NextRequest) {
       console.error('Insert error:', insertError)
     }
 
+    // Fire n8n webhook for real human opens only
+    if (!isBot && !insertError) {
+      const webhookUrl = process.env.N8N_WEBHOOK_URL
+      if (webhookUrl) {
+        try {
+          await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              event_type: 'dashboard_email_open',
+              event_id: eventId,
+              tracking_id: trackingId,
+              pdf_name: pdf.name,
+              campaign_name: pdf.campaign_name,
+              opened_at: openedAt,
+              lead: { email },
+              location: { city, country },
+              device: {
+                browser,
+                os,
+                platform: device,
+                screen_width: screenWidth,
+                screen_height: screenHeight,
+              },
+              is_bot: false,
+            }),
+            signal: AbortSignal.timeout(5000),
+          })
+        } catch (err) {
+          console.error('n8n webhook failed (non-fatal):', err)
+        }
+      }
+    }
+
     return NextResponse.json({ success: true, pdf_url: pdfUrl, is_bot: isBot })
   } catch (err: unknown) {
     console.error('Track error:', err)

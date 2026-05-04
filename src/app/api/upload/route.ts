@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
     return NextResponse.json({
-      tracking_url: `${appUrl}/track/${trackingId}`,
+      tracking_url: `${appUrl}/track/${trackingId}?email={{email}}`,
       tracking_id: trackingId,
     })
   } catch (err: unknown) {
