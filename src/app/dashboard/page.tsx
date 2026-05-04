@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import type { Pdf, TrackingEvent } from '@/types'
 import Toast, { ToastMessage } from '@/components/Toast'
 
 export default function Dashboard() {
+  const router = useRouter()
   const [pdfs, setPdfs] = useState<Pdf[]>([])
   const [loading, setLoading] = useState(true)
   const [toasts, setToasts] = useState<ToastMessage[]>([])
@@ -76,6 +78,11 @@ export default function Dashboard() {
     }
   }, [addToast, fetchPdfs])
 
+  const signOut = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    router.replace('/login')
+  }
+
   const copyLink = (trackingId: string) => {
     const url = `${process.env.NEXT_PUBLIC_APP_URL}/track/${trackingId}?email={{email}}`
     navigator.clipboard.writeText(url)
@@ -99,12 +106,20 @@ export default function Dashboard() {
               </div>
               <h1 className="text-xl font-semibold text-white">PDF Tracker</h1>
             </div>
-            <Link
-              href="/upload"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            >
-              + Upload PDF
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/upload"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                + Upload PDF
+              </Link>
+              <button
+                onClick={signOut}
+                className="bg-gray-800 hover:bg-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Sign out
+              </button>
+            </div>
           </div>
         </header>
 
